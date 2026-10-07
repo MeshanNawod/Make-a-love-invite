@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Love Invite Maker</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    text-align: center;
+    background-color: #ffffff;
+    color: #333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 20px 16px 60px;
+    overflow-x: hidden;
+  }
+
+  h1 { font-weight: bold; font-size: 24px; margin: 14px auto 6px; color: #e60073; max-width: 480px; overflow-wrap: anywhere; }
+  h2 { font-style: italic; color: #ff6699; font-weight: normal; font-size: 18px; margin: 8px auto; max-width: 480px; overflow-wrap: anywhere; }
+  h3.section { text-align: left; font-size: 15px; color: #e60073; margin: 26px 0 10px; padding-bottom: 6px; border-bottom: 1px dashed #f3c2d6; }
+
+  img { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+  #gifImage, #gifImage2 { width: 220px; border-radius: 12px; }
+
+  .card { max-width: 460px; margin: 0 auto; text-align: left; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 13px; font-weight: bold; color: #ff6699; margin-bottom: 4px; }
+
+  .field input[type="text"], .field input[type="url"], .field input[type="date"],
+  .field select, .field textarea {
+    width: 100%; padding: 8px 10px; border: 1px solid #f3c2d6; border-radius: 6px;
+    font-family: inherit; font-size: 16px; color: #333; background: #fff8fb;
+  }
+  .field input.invalid { border-color: #f44336; }
+  .field textarea { resize: vertical; min-height: 80px; }
+  .field .hint { font-size: 12px; color: #999; margin-top: 4px; font-style: italic; }
+  .two { display: flex; gap: 10px; }
+  .two .field { flex: 1; min-width: 0; }
+  .check { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #555; margin-bottom: 14px; }
+  .check input { width: 18px; height: 18px; }
+
+  .upload-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+  .thumb { display: none; flex: none; width: 36px; height: 36px; margin: 0; object-fit: cover; border-radius: 50%; border: 1px solid #f3c2d6; }
+
+  .button {
+    padding: 10px 18px; margin: 0; cursor: pointer; border: none; color: #fff; border-radius: 20px;
+    font-family: inherit; font-size: 16px; line-height: 1.2; touch-action: manipulation;
+    transition: font-size .2s ease, padding .2s ease, opacity .2s ease;
+  }
+  .button:hover { opacity: 0.9; }
+  #greenButton, #uploadBtn, #sealBtn { background-color: #4caf50; }
+  #redButton { background-color: #f44336; }
+  #uploadBtn { font-size: 13px; padding: 8px 14px; }
+
+  hr { max-width: 420px; margin: 30px auto; border: none; border-top: 1px dashed #f3c2d6; }
+  .output { margin-top: 20px; }
+  .hidden { display: none; }
+
+  .warn { font-size: 12px; color: #b8860b; background: #fff8e6; border: 1px solid #f0dca0; padding: 8px 10px; border-radius: 6px; margin-bottom: 10px; }
+
+  .out-row { display: flex; gap: 8px; align-items: center; background: #fff8fb; border: 1px solid #f3c2d6; border-radius: 8px; padding: 8px 10px; margin-bottom: 10px; }
+  .out-row input { flex: 1; min-width: 0; border: none; background: transparent; font-size: 12px; color: #666; outline: none; text-overflow: ellipsis; }
+  .out-row .button { flex: none; font-size: 13px; padding: 8px 14px; white-space: nowrap; }
+
+  footer.note { max-width: 420px; margin: 30px auto 0; font-size: 12px; color: #aaa; }
+
+  #askView { display: none; }
+  .ask-photo, #yayPhoto { width: 130px; height: 130px; border-radius: 50%; object-fit: cover; border: 4px solid #ffe0ec; margin: 10px auto 4px; }
+  #yayPhoto { width: 160px; height: 160px; }
+
+  .choices { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; margin: 16px auto 0; max-width: 480px; }
+  .choices .button { max-width: 100%; overflow-wrap: anywhere; }
+
+  .yay { display: none; }
+  .yay .heart { font-size: 40px; display: block; margin-bottom: 4px; }
+
+  /* ---- Plan section (what she sees after Yes) ---- */
+  #planCard {
+    display: none; max-width: 460px; margin: 22px auto 0; padding: 16px;
+    background: #fff8fb; border: 1px solid #f3c2d6; border-radius: 14px; text-align: left;
+  }
+  #planCard h3 { margin: 0 0 12px; text-align: center; color: #e60073; font-size: 18px; }
+  .pgroup { margin-bottom: 14px; }
+  .pgroup .plabel { font-size: 13px; font-weight: bold; color: #ff6699; margin-bottom: 6px; display: block; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    padding: 8px 12px; border-radius: 18px; border: 1px solid #f3c2d6; background: #fff;
+    color: #555; font-size: 14px; cursor: pointer; font-family: inherit; touch-action: manipulation;
+  }
+  .chip.on { background: #e60073; border-color: #e60073; color: #fff; }
+  #planCard input[type="date"], #planCard textarea {
+    width: 100%; padding: 8px 10px; border: 1px solid #f3c2d6; border-radius: 6px;
+    font-family: inherit; font-size: 16px; background: #fff; color: #333;
+  }
+  #planCard textarea { min-height: 60px; resize: vertical; }
+  #sendPlanBtn { background: #e60073; display: block; margin: 8px auto 0; font-size: 17px; }
+  #planStatus { text-align: center; font-size: 14px; color: #4caf50; margin-top: 10px; min-height: 18px; }
+
+  #waBtn { display: none; text-decoration: none; background: #25d366; margin-top: 16px; padding: 12px 22px; }
+
+  .make-own { display: inline-block; margin-top: 22px; font-size: 12px; color: #ff6699; text-decoration: none; }
+  .make-own:hover { text-decoration: underline; }
+
+  .confetti-piece { position: fixed; top: -10px; width: 8px; height: 14px; opacity: 0.9; animation: fall linear forwards; z-index: 50; pointer-events: none; }
+  @keyframes fall { to { transform: translateY(105vh) rotate(360deg); opacity: 0.4; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .confetti-piece { display: none; }
+    .button { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ BUILDER VIEW ============ -->
+<div id="builderView">
+  <img id="gifImage" src="https://gifdb.com/images/high/cute-love-bear-roses-ou7zho5oosxnpo6k.gif" alt="Animated GIF" onerror="this.style.display='none'">
+  <h1>Make a love invite 💌</h1>
+  <h2>Valentine, birthday wish, date or trip. Fill the blanks, download, and send it on WhatsApp.</h2>
+
+  <hr>
+
+  <div class="card">
+
+    <h3 class="section">1. Who is it for?</h3>
+
+    <div class="field">
+      <label for="occasion">What kind of invite?</label>
+      <select id="occasion">
+        <option value="valentine">Valentine 💘</option>
+        <option value="birthday">Birthday wish 🎂</option>
+        <option value="date">Date invite 🌹</option>
+        <option value="trip">Trip invite ✈️</option>
+      </select>
+      <div class="hint">Changing this refills the texts below with ready-made ones. You can edit them.</div>
+    </div>
+
+    <div class="two">
+      <div class="field">
+        <label for="theirName">Her/his name</label>
+        <input type="text" id="theirName" placeholder="Their name" maxlength="40">
+      </div>
+      <div class="field">
+        <label for="fromName">Your name</label>
+        <input type="text" id="fromName" placeholder="Your name" maxlength="40">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="imgUrl">A picture (optional, paste an image link)</label>
+      <input type="url" id="imgUrl" placeholder="https://example.com/photo.jpg">
+      <div class="upload-row">
+        <button type="button" class="button" id="uploadBtn">or upload a photo</button>
+        <input type="file" id="fileInput" accept="image/*" style="display:none;">
+        <img id="thumbPreview" class="thumb" alt="">
+      </div>
+      <div class="hint">A hosted link keeps the shareable link short. An uploaded photo works best with the downloadable file.</div>
+    </div>
+
+    <h3 class="section">2. The question and buttons</h3>
+
+    <div class="field">
+      <label for="headline">Big question (use {name} for their name)</label>
+      <input type="text" id="headline" maxlength="120">
+    </div>
+
+    <div class="field">
+      <label for="openLine">Opening line / birthday wish</label>
+      <textarea id="openLine" maxlength="300"></textarea>
+    </div>
+
+    <div class="two">
+      <div class="field">
+        <label for="yesBtnText">"Yes" button text</label>
+        <input type="text" id="yesBtnText" maxlength="30" value="Yes">
+      </div>
+      <div class="field">
+        <label for="noBtnText">"No" button text</label>
+        <input type="text" id="noBtnText" maxlength="30" value="No">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="noLines">If they hesitate, the No button shows these (one per line)</label>
+      <textarea id="noLines" style="min-height:120px;">Are you sure?
+Really sure?
+Just think about it for a second...
+I'll be a little sad if you say no
+Okay a lot sad
+Last chance to make me happy 🥺</textarea>
+    </div>
+
+    <label class="check"><input type="checkbox" id="shrinkNo" checked> Make the No button smaller each time (Yes grows)</label>
+
+    <div class="field">
+      <label for="yesLine">Message after they say yes</label>
+      <textarea id="yesLine"></textarea>
+    </div>
+
+    <h3 class="section">3. Let them plan the date or trip</h3>
+
+    <label class="check"><input type="checkbox" id="planOn" checked> Show a planner after they say Yes</label>
+
+    <div class="field">
+      <label for="planTitle">Planner heading</label>
+      <input type="text" id="planTitle" maxlength="60" value="Let's plan it together 💞">
+    </div>
+
+    <div class="field">
+      <label for="timesIn">Time options (one per line)</label>
+      <textarea id="timesIn" style="min-height:90px;">Morning ☀️
+Afternoon 🌤️
+Evening 🌆
+Night 🌙</textarea>
+      <div class="hint">She also picks a calendar date herself.</div>
+    </div>
+
+    <div class="field">
+      <label for="placesIn">Place options</label>
+      <textarea id="placesIn" style="min-height:100px;">Candle-light dinner 🕯️
+Beach sunset 🌅
+Coffee shop ☕
+Picnic in the park 🧺
+Movie theatre 🎬</textarea>
+    </div>
+
+    <div class="field">
+      <label for="foodIn">Food options</label>
+      <textarea id="foodIn" style="min-height:100px;">Pizza 🍕
+Rice & curry 🍛
+Sushi 🍣
+Burgers 🍔
+Desserts & ice cream 🍨</textarea>
+    </div>
+
+    <div class="field">
+      <label for="actIn">Extra ideas, she can pick any (leave empty to hide)</label>
+      <textarea id="actIn" style="min-height:100px;">Movie night 🎬
+Long drive 🚗
+Photoshoot 📸
+Stargazing ✨
+Cooking together 👩‍🍳
+Handwritten love letters 💌</textarea>
+    </div>
+
+    <div class="field">
+      <label for="tripIn">Trip options: "Will you come on a trip with me?" (leave empty to hide)</label>
+      <textarea id="tripIn" style="min-height:100px;">Beach getaway 🏖️
+Hill country trip ⛰️
+City weekend 🏙️
+Not yet, just us for now 💕</textarea>
+    </div>
+
+    <h3 class="section">4. How you find out her answer</h3>
+
+    <div class="field">
+      <label for="waNumber">Your WhatsApp number (she taps Send)</label>
+      <input type="text" id="waNumber" inputmode="numeric" placeholder="94771234567" maxlength="15">
+      <div class="hint">Country code + number, no + or spaces.</div>
+    </div>
+
+    <div class="field">
+      <label for="ntfyTopic">Secret alert name (instant, automatic)</label>
+      <input type="text" id="ntfyTopic" placeholder="kasun-valentine-7392" maxlength="60">
+      <div class="hint">Install the free "ntfy" app and subscribe to this same name. Make it hard to guess.</div>
+    </div>
+
+    <div style="text-align:center;">
+      <button type="button" class="button" id="sealBtn" style="font-size:17px;">💌 Create my invite</button>
+    </div>
+
+    <div class="output hidden" id="output">
+      <div class="warn" id="lengthWarn" style="display:none;">This link is very long (embedded photo or many options). It still works, but the downloadable file is more reliable to share.</div>
+      <div class="out-row">
+        <input type="text" id="linkOut" readonly aria-label="Shareable link">
+        <button type="button" class="button" id="copyLinkBtn" style="background:#ff6699;">Copy link</button>
+      </div>
+      <div class="out-row">
+        <input type="text" id="fileOut" readonly value="A self-contained HTML file, ready to attach" aria-label="Downloadable file">
+        <button type="button" class="button" id="downloadBtn" style="background:#e60073;">Download HTML</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="note">Nothing you enter here is uploaded anywhere. It all lives in the link or the file you download.</footer>
+</div>
+
+<!-- ============ RECIPIENT / ASK VIEW ============ -->
+<div id="askView">
+  <div id="askCard">
+    <img id="gifImage2" src="https://gifdb.com/images/high/cute-love-bear-roses-ou7zho5oosxnpo6k.gif" alt="Animated GIF" onerror="this.style.display='none'">
+    <img class="ask-photo" id="askPhoto" src="" alt="" style="display:none;">
+    <h1 id="askHeadline"></h1>
+    <h2 id="askOpening"></h2>
+    <div class="choices">
+      <button type="button" class="button" id="greenButton">Yes</button>
+      <button type="button" class="button" id="redButton">No</button>
+    </div>
+  </div>
+
+  <div class="yay" id="yayCard">
+    <span class="heart">❤</span>
+    <h1>YaY!!!</h1>
+    <img id="yayPhoto" src="" alt="" style="display:none;">
+    <h2 id="yayMessage"></h2>
+    <h2 id="yaySignature" style="color:#999;"></h2>
+
+    <div id="planCard">
+      <h3 id="planHeading"></h3>
+      <div id="planGroups"></div>
+      <button type="button" class="button" id="sendPlanBtn">Send my plan 💌</button>
+      <div id="planStatus"></div>
+    </div>
+
+    <a id="waBtn" class="button" target="_blank" rel="noopener">Tell him 💬</a>
+  </div>
+
+  <a href="#" class="make-own" id="makeOwnLink" style="display:none;">Make your own →</a>
+</div>
+
+<script>
+(function(){
+  // Snapshot the untouched page now, so the downloaded file is always clean.
+  var ORIGINAL_HTML = '<!DOCTYPE html>' + document.documentElement.outerHTML;
+
+  var params = new URLSearchParams(location.search);
+  var data = params.get('d');
+  var preset = window.__PRESET_STATE__;
+
+  // Ready-made texts per occasion. {name} is replaced with the person's name.
+  var OCCASIONS = {
+    valentine: {
+      h: 'Will you be my Valentine, {name}?',
+      l: "Every day with you feels like a good idea. So here's another one.",
+      y: "Knew you'd come around. Now let's go make it official. Dinner's on me."
+    },
+    birthday: {
+      h: 'Happy Birthday, {name}! 🎂🎉',
+      l: "Another year of you being wonderful. I made this just for you. Can I take you out to celebrate?",
+      y: "Best birthday ever loading... Pick how we celebrate below 🎁"
+    },
+    date: {
+      h: '{name}, will you go on a date with me? 🌹',
+      l: "No pressure, just good food, good company, and me trying not to be nervous.",
+      y: "Yes! I'm already smiling. Let's plan the perfect evening below."
+    },
+    trip: {
+      h: '{name}, will you come on a trip with me? ✈️',
+      l: "Bags packed, playlist ready. The only thing missing is you.",
+      y: "Best travel buddy ever. Choose our adventure below 🌍"
+    }
+  };
+
+  function baseUrl(){ return location.origin + location.pathname; }
+  function encodeState(obj){ return encodeURIComponent(JSON.stringify(obj)); }
+  function decodeState(str){ try{ return JSON.parse(str); }catch(e){ return null; } }
+
+  // Replaces {name}. With no name, also drops the comma/space before it.
+  function fill(s, name){
+    return String(s || '').replace(/(,?\s*)\{name\}/g, function(m, pre){ return name ? pre + name : ''; });
+  }
+
+  if(preset){
+    renderAsk(preset, true);
+  }else if(data){
+    renderAsk(decodeState(data), false);
+  }else{
+    initBuilder();
+  }
+
+  // ================= ASK VIEW =================
+  function renderAsk(state, isStandalone){
+    if(!state || typeof state !== 'object'){ initBuilder(); return; }
+    document.getElementById('builderView').style.display = 'none';
+    document.getElementById('askView').style.display = 'block';
+
+    var occ = OCCASIONS[state.o] || OCCASIONS.valentine;
+    var headline = fill(state.h || occ.h, state.n);
+    document.title = headline;
+
+    var img = state.i || '';
+    var askPhoto = document.getElementById('askPhoto');
+    var yayPhoto = document.getElementById('yayPhoto');
+    [askPhoto, yayPhoto].forEach(function(el){ el.onerror = function(){ el.style.display = 'none'; }; });
+    askPhoto.src = img;
+    askPhoto.style.display = img ? 'block' : 'none';
+
+    document.getElementById('askHeadline').textContent = headline;
+    document.getElementById('askOpening').textContent = state.l || '';
+
+    var noLines = (state.m && state.m.length) ? state.m : ['Are you sure?'];
+    var noIndex = 0;
+    var noBtn = document.getElementById('redButton');
+    var yesBtn = document.getElementById('greenButton');
+    yesBtn.textContent = state.yb || 'Yes';
+    noBtn.textContent = state.nb || 'No';
+    var yesSize = 16, noSize = 16;
+
+    noBtn.addEventListener('click', function(){
+      noBtn.textContent = noLines[noIndex % noLines.length];
+      noIndex++;
+      yesSize += 6;
+      yesBtn.style.fontSize = yesSize + 'px';
+      yesBtn.style.padding = (yesSize * 0.6) + 'px ' + (yesSize * 1.4) + 'px';
+      if(state.s){
+        noSize = Math.max(10, noSize - 1);
+        noBtn.style.fontSize = noSize + 'px';
+        noBtn.style.padding = (noSize * 0.5) + 'px ' + (noSize * 1.1) + 'px';
+      }
+    });
+
+    var notified = false;
+    var planText = '';
+
+    function setWhatsApp(text, label){
+      if(!state.w) return;
+      var wa = document.getElementById('waBtn');
+      wa.href = 'https://wa.me/' + state.w + '?text=' + encodeURIComponent(text);
+      wa.textContent = label;
+      wa.style.display = 'inline-block';
+    }
+
+    function ping(text){
+      if(!state.t) return;
+      try{
+        fetch('https://ntfy.sh/' + encodeURIComponent(state.t), { method: 'POST', body: text })
+          .catch(function(){});
+      }catch(e){}
+    }
+
+    yesBtn.addEventListener('click', function(){
+      document.getElementById('askCard').style.display = 'none';
+      document.getElementById('yayCard').style.display = 'block';
+      yayPhoto.src = img;
+      yayPhoto.style.display = img ? 'block' : 'none';
+      document.getElementById('yayMessage').textContent = state.y || occ.y;
+      document.getElementById('yaySignature').textContent = state.f ? ('— ' + state.f) : '';
+      launchConfetti();
+
+      if(!notified){
+        notified = true;
+        ping('Yes! ❤️ ' + (state.n || 'She') + ' said yes to: ' + headline);
+      }
+
+      setWhatsApp("Yes! ❤️ I said yes" + (state.f ? ', ' + state.f : '') + '!', 'Tell him 💬');
+
+      if(state.pe) buildPlan();
+    });
+
+    // ----- Planner -----
+    function buildPlan(){
+      var card = document.getElementById('planCard');
+      var box = document.getElementById('planGroups');
+      document.getElementById('planHeading').textContent = state.pq || "Let's plan it together 💞";
+      card.style.display = 'block';
+
+      var picks = {};   // key -> array of chosen labels
+      var dateVal = '';
+      var note = '';
+
+      // Date picker
+      var dg = document.createElement('div');
+      dg.className = 'pgroup';
+      var dl = document.createElement('label');
+      dl.className = 'plabel';
+      dl.textContent = 'Pick a date 📅';
+      var di = document.createElement('input');
+      di.type = 'date';
+      var t = new Date();
+      di.min = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
+      di.addEventListener('input', function(){ dateVal = di.value; });
+      dg.appendChild(dl); dg.appendChild(di);
+      box.appendChild(dg);
+
+      // Chip groups
+      var groups = [
+        { key: 'pt', label: 'What time? ⏰', multi: false, name: 'Time' },
+        { key: 'pp', label: 'Where? 📍', multi: false, name: 'Place' },
+        { key: 'pf', label: 'What should we eat? 🍽️', multi: false, name: 'Food' },
+        { key: 'pa', label: 'Extra ideas, pick any 💞', multi: true, name: 'Ideas' },
+        { key: 'pr', label: 'Come on a trip with me? ✈️', multi: false, name: 'Trip' }
+      ];
+
+      groups.forEach(function(g){
+        var opts = state[g.key];
+        if(!opts || !opts.length) return;
+        picks[g.name] = [];
+
+        var wrap = document.createElement('div');
+        wrap.className = 'pgroup';
+        var lab = document.createElement('span');
+        lab.className = 'plabel';
+        lab.textContent = g.label;
+        var chips = document.createElement('div');
+        chips.className = 'chips';
+
+        opts.forEach(function(text){
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'chip';
+          b.textContent = text;
+          b.addEventListener('click', function(){
+            var arr = picks[g.name];
+            var at = arr.indexOf(text);
+            if(g.multi){
+              if(at > -1){ arr.splice(at, 1); b.classList.remove('on'); }
+              else { arr.push(text); b.classList.add('on'); }
+            }else{
+              Array.prototype.forEach.call(chips.children, function(c){ c.classList.remove('on'); });
+              if(at > -1){ picks[g.name] = []; }
+              else { picks[g.name] = [text]; b.classList.add('on'); }
+            }
+          });
+          chips.appendChild(b);
+        });
+
+        wrap.appendChild(lab); wrap.appendChild(chips);
+        box.appendChild(wrap);
+      });
+
+      // Free note
+      var ng = document.createElement('div');
+      ng.className = 'pgroup';
+      var nl = document.createElement('label');
+      nl.className = 'plabel';
+      nl.textContent = 'Anything else you want to say? 💬';
+      var ni = document.createElement('textarea');
+      ni.maxLength = 300;
+      ni.addEventListener('input', function(){ note = ni.value.trim(); });
+      ng.appendChild(nl); ng.appendChild(ni);
+      box.appendChild(ng);
+
+      document.getElementById('sendPlanBtn').addEventListener('click', function(){
+        var lines = ['💖 Our plan, picked by ' + (state.n || 'her') + ':'];
+        if(dateVal){
+          var d = new Date(dateVal + 'T00:00:00');
+          lines.push('📅 Date: ' + d.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
+        }
+        Object.keys(picks).forEach(function(name){
+          if(picks[name].length) lines.push(name + ': ' + picks[name].join(', '));
+        });
+        if(note) lines.push('💬 ' + note);
+
+        var status = document.getElementById('planStatus');
+        if(lines.length === 1){
+          status.style.color = '#f44336';
+          status.textContent = 'Pick at least one thing first 🙂';
+          return;
+        }
+
+        planText = lines.join('\n');
+        ping(planText);
+        status.style.color = '#4caf50';
+        status.textContent = state.t ? 'Sent! He will see it right away 💌' : 'Almost done! Tap the green button to send it 💌';
+        setWhatsApp(planText, 'Send my plan on WhatsApp 💬');
+        document.getElementById('sendPlanBtn').textContent = 'Update my plan 💌';
+      });
+    }
+
+    // A downloaded file has nothing to "make your own" from, so hide it there.
+    if(!isStandalone){
+      var makeOwn = document.getElementById('makeOwnLink');
+      makeOwn.href = baseUrl();
+      makeOwn.style.display = 'inline-block';
+    }
+  }
+
+  function launchConfetti(){
+    var colors = ['#e60073', '#ff6699', '#4caf50', '#ffd700'];
+    for(var i = 0; i < 40; i++){
+      var el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.left = Math.random() * 100 + 'vw';
+      el.style.background = colors[Math.floor(Math.random() * colors.length)];
+      el.style.animationDuration = (2.5 + Math.random() * 2) + 's';
+      el.style.animationDelay = (Math.random() * 0.6) + 's';
+      document.body.appendChild(el);
+      (function(node){ setTimeout(function(){ node.remove(); }, 5500); })(el);
+    }
+  }
+
+  // ================= BUILDER VIEW =================
+  function initBuilder(){
+    var $ = function(id){ return document.getElementById(id); };
+    var els = {
+      occasion: $('occasion'), theirName: $('theirName'), fromName: $('fromName'), imgUrl: $('imgUrl'),
+      headline: $('headline'), openLine: $('openLine'), yesBtnText: $('yesBtnText'), noBtnText: $('noBtnText'),
+      noLines: $('noLines'), shrinkNo: $('shrinkNo'), yesLine: $('yesLine'),
+      planOn: $('planOn'), planTitle: $('planTitle'), timesIn: $('timesIn'), placesIn: $('placesIn'),
+      foodIn: $('foodIn'), actIn: $('actIn'), tripIn: $('tripIn'),
+      waNumber: $('waNumber'), ntfyTopic: $('ntfyTopic'),
+      thumbPreview: $('thumbPreview'), uploadBtn: $('uploadBtn'), fileInput: $('fileInput'),
+      sealBtn: $('sealBtn'), output: $('output'), linkOut: $('linkOut'),
+      copyLinkBtn: $('copyLinkBtn'), downloadBtn: $('downloadBtn'), lengthWarn: $('lengthWarn')
+    };
+
+    var uploadedImage = null;
+
+    function lines(el){
+      return el.value.split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
+    }
+
+    function applyOccasion(){
+      var o = OCCASIONS[els.occasion.value];
+      els.headline.value = o.h;
+      els.openLine.value = o.l;
+      els.yesLine.value = o.y;
+    }
+    els.occasion.addEventListener('change', applyOccasion);
+    applyOccasion();
+
+    function currentState(){
+      var plan = els.planOn.checked;
+      return {
+        o: els.occasion.value,
+        n: els.theirName.value.trim(),
+        f: els.fromName.value.trim(),
+        i: uploadedImage || els.imgUrl.value.trim(),
+        h: els.headline.value.trim(),
+        l: els.openLine.value.trim(),
+        yb: els.yesBtnText.value.trim(),
+        nb: els.noBtnText.value.trim(),
+        m: lines(els.noLines),
+        s: els.shrinkNo.checked ? 1 : 0,
+        y: els.yesLine.value.trim(),
+        w: els.waNumber.value.replace(/\D/g, ''),
+        t: els.ntfyTopic.value.trim().replace(/[^\w-]/g, ''),
+        pe: plan ? 1 : 0,
+        pq: els.planTitle.value.trim(),
+        pt: plan ? lines(els.timesIn) : [],
+        pp: plan ? lines(els.placesIn) : [],
+        pf: plan ? lines(els.foodIn) : [],
+        pa: plan ? lines(els.actIn) : [],
+        pr: plan ? lines(els.tripIn) : []
+      };
+    }
+
+    // Crop to a square and shrink, so an uploaded photo doesn't bloat the link.
+    function shrinkImage(dataUrl, done){
+      var im = new Image();
+      im.onload = function(){
+        var size = 240;
+        var c = document.createElement('canvas');
+        c.width = c.height = size;
+        var side = Math.min(im.width, im.height);
+        c.getContext('2d').drawImage(im, (im.width - side) / 2, (im.height - side) / 2, side, side, 0, 0, size, size);
+        done(c.toDataURL('image/jpeg', 0.8));
+      };
+      im.onerror = function(){ done(dataUrl); };
+      im.src = dataUrl;
+    }
+
+    els.theirName.addEventListener('input', function(){ els.theirName.classList.remove('invalid'); });
+
+    els.uploadBtn.addEventListener('click', function(){ els.fileInput.click(); });
+    els.fileInput.addEventListener('change', function(e){
+      var file = e.target.files[0];
+      if(!file) return;
+      var reader = new FileReader();
+      reader.onload = function(ev){
+        shrinkImage(ev.target.result, function(small){
+          uploadedImage = small;
+          els.thumbPreview.src = small;
+          els.thumbPreview.style.display = 'block';
+          els.imgUrl.value = '';
+          els.imgUrl.placeholder = 'Using uploaded photo';
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+
+    els.imgUrl.addEventListener('input', function(){
+      if(uploadedImage){
+        uploadedImage = null;
+        els.thumbPreview.style.display = 'none';
+        els.imgUrl.placeholder = 'https://example.com/photo.jpg';
+      }
+    });
+
+    function buildStandaloneHtml(state){
+      var payload = JSON.stringify(state).replace(/</g, '\\u003c');
+      var presetScript = '<script>window.__PRESET_STATE__=' + payload + ';<\/script>';
+      return ORIGINAL_HTML.replace('<head>', function(){ return '<head>' + presetScript; });
+    }
+
+    els.sealBtn.addEventListener('click', function(){
+      var s = currentState();
+      if(!s.n){
+        els.theirName.classList.add('invalid');
+        els.theirName.focus();
+        els.theirName.scrollIntoView({behavior: 'smooth', block: 'center'});
+        return;
+      }
+
+      var link = baseUrl() + '?d=' + encodeState(s);
+      els.linkOut.value = link;
+      els.lengthWarn.style.display = (link.length > 1800) ? 'block' : 'none';
+      els.output.classList.remove('hidden');
+
+      els.copyLinkBtn.onclick = function(){
+        function done(){
+          els.copyLinkBtn.textContent = 'Copied!';
+          setTimeout(function(){ els.copyLinkBtn.textContent = 'Copy link'; }, 1600);
+        }
+        function fallback(){
+          els.linkOut.focus();
+          els.linkOut.select();
+          try{ document.execCommand('copy'); done(); }catch(e){}
+        }
+        if(navigator.clipboard && window.isSecureContext){
+          navigator.clipboard.writeText(link).then(done, fallback);
+        }else{
+          fallback();
+        }
+      };
+
+      els.downloadBtn.onclick = function(){
+        var blob = new Blob([buildStandaloneHtml(s)], {type: 'text/html'});
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'for-' + (s.n.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'you') + '.html';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+      };
+
+      els.output.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+    });
+  }
+})();
+</script>
+</body>
+</html>
