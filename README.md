@@ -12,7 +12,7 @@ One HTML file. No server, no domain, no accounts. You fill in a form, download a
 
 ## How to use
 
-1. Open `will-you-be-my-valentine.html` in your browser (this is the builder).
+1. Open `Make a love invite.html` in your browser (this is the builder).
 2. Go through sections 1 to 4, then click **Create my invite**.
 3. Click **Download HTML**. You get a personalised file named like `for-her-name.html`.
 4. Send that file on WhatsApp as a document.
